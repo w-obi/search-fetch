@@ -3,84 +3,110 @@ import searchIcon from "../assets/search.png";
 import api from "../api";
 
 export default function Home() {
-    
     const [inputText, setInputText] = useState('');
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [hasSearched, setHasSearched] = useState(false);
 
     const handleSearch = async () => {
-        if (!inputText.trim()) return;
 
         setLoading(true);
         try {
-            const response = await api.get("/"); 
-            
-            const filteredUsers = response.data.filter(user => 
-                user.name.toLowerCase().includes(inputText.toLowerCase()) ||
-                user.email.toLowerCase().includes(inputText.toLowerCase())
-            );
+            const response = await api.get("/");
+            let filteredUsers;
+
+            if (inputText.length != 0) {
+                filteredUsers = response.data.filter(user => 
+                    user.name.toLowerCase().includes(inputText.toLowerCase()) ||
+                    user.email.toLowerCase().includes(inputText.toLowerCase())
+                );
+            } else {
+                filteredUsers = response.data;
+            }
 
             setUsers(filteredUsers);
             setHasSearched(true);
         } catch (error) {
             console.error("Error fetching users:", error);
-            alert("Failed to fetch data");
         } finally {
             setLoading(false);
         }
     };
 
-    const handleKeyDown = (e) => {
-        if (e.key === 'Enter') {
-            handleSearch();
-        }
-    };
-
     return (
-        <div className="min-h-screen overflow-x-hidden flex flex-col p-4">
+        <div className="min-h-screen p-4">
             
-            {/* search bar */}
-            <div className="flex flex-row rounded-lg border-2 border-black mt-4 px-4 py-2 mx-auto bg-gray-50 items-center">
-                <input
-                    type="text"
-                    placeholder="Enter names to search"
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    className="bg-transparent border-none focus:outline-none w-64"
-                />
-                <img 
-                    src={searchIcon} 
-                    alt="Search" 
-                    className="w-6 h-6 mx-1 cursor-pointer" 
-                    onClick={handleSearch}
-                />
+            <div className="max-w-4xl mx-auto text-center mb-12">
+                <h1 className="text-3xl font-bold mb-2">SearchFetch</h1>
+                <p className="mb-8">Enter name or email and click on search icon</p>
+                
+                <div className="max-w-md mx-auto flex flex-row justify-between items-center border rounded-lg">
+                    <input
+                        type="text"
+                        placeholder="Search name or email..."
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        className="w-full pl-4 pr-12 py-3 outline-none"
+                    />
+                    <button 
+                        onClick={handleSearch}
+                        className="h-full px-4 cursor-pointer"
+                    >
+                        <img src={searchIcon} alt="Search" className="w-5 h-5" />
+                    </button>
+                </div>
             </div>
 
-            <div className="flex flex-col items-center mt-4 text-center">
-                <p className="font-bold">Welcome to the search-fetch!</p>
-                <p>Enter the keywords into search bar and click on the search button.</p>
-            </div>
-
-            <div className="mt-8 max-w-md mx-auto w-full">
-                {loading && <p className="text-center">Loading...</p>}
-
-                {!loading && hasSearched && users.length === 0 && (
-                    <p className="text-center text-red-500">No users found matching "{inputText}"</p>
+            <div className="max-w-6xl mx-auto">
+                {loading && (
+                    <div className="flex justify-center items-center py-12">
+                        <span className="ml-3">Loading...</span>
+                    </div>
                 )}
 
-                {!loading && users.map(user => (
-                    <div key={user.id} className="p-4 mb-2 border rounded shadow-sm bg-white">
-                        <h3 className="font-bold">{user.name}</h3>
-                        <p className="text-sm text-gray-600">{user.username}</p>
-                        <p className="text-sm text-gray-600">{user.email}</p>
-                        <p className="text-sm text-gray-600">City: {user.address.city}</p>
-                        <p className="text-sm text-gray-600">Phone: {user.phone}</p>
-                        <p className="text-sm text-gray-600">Website: {user.website}</p>
-                        {/* <p className="text-sm text-gray-600">Company: {user.company}</p> */}
+                {!loading && hasSearched && users.length === 0 && (
+                    <div className="text-center border p-12">
+                        <p>No user found: {inputText}</p>
                     </div>
-                ))}
+                )}
+
+                <div className="grid grid-cols-1 gap-4">
+                    {!loading && users.map(user => (
+                        <div key={user.id} className="border flex flex-col">
+                            
+                            <div className="border-b p-4">
+                                <h3 className="text-xs">{user.name}</h3>
+                                <p className="text-xs">{user.username}</p>
+                            </div>
+
+                            <div className="p-5 space-y-6 flex-grow">
+                                <div className="grid grid-cols-1 gap-y-4 text-xs">
+                                    <p>{user.email}</p>
+                                    <p>{user.phone}</p>
+                                    <p>{user.website}</p>
+                                </div>
+
+                                <div className="pt-4 border-t">
+                                    <p className="text-xs">{user.company.name}</p>
+                                    <p className="text-xs">"{user.company.catchPhrase}"</p>
+                                    <p className="text-xs">{user.company.bs}</p>
+                                </div>
+
+                                <div className="pt-4 border-t">
+                                    <div className="text-xs space-y-1">
+                                        <p>{user.address.suite} {user.address.street}</p>
+                                        <p>{user.address.city}, {user.address.zipcode}</p>
+                                        
+                                        <div className="flex gap-4 mt-3 pt-3 text-xs">
+                                            <span>Lat: {user.address.geo.lat}</span>
+                                            <span>Lng: {user.address.geo.lng}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );
