@@ -33,8 +33,14 @@ export default function Home() {
         }
     };
 
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
     return (
-        <div className="min-h-screen p-4">
+        <div className="min-h-screen p-4 ">
             
             <div className="max-w-4xl mx-auto text-center mb-12">
                 <h1 className="text-3xl font-bold mb-2">SearchFetch</h1>
@@ -47,6 +53,7 @@ export default function Home() {
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
                         className="w-full pl-4 pr-12 py-3 outline-none"
+                        onKeyDown={handleKeyDown}
                     />
                     <button 
                         onClick={handleSearch}
